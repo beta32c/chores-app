@@ -1,25 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chore Tracker</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Chore Tracker</h1>
-    <div class="add-task">
-      <input type="text" id="taskName" placeholder="Enter chore name" />
-      <input type="number" id="taskPoints" placeholder="Points" min="1" />
-      <button id="addTaskBtn">Add Chore</button>
-    </div>
-    <h2>Your Chores</h2>
-    <ul id="taskList"></ul>
-    <div class="summary">
-      <h3>Total Points: <span id="totalPoints">0</span></h3>
-      <button id="resetDayBtn">Reset Day</button>
-    </div>
+  <h1>Chore Tracker</h1>
+  <div class="tabs">
+    <button id="tab1" class="active" onclick="switchTab('Kid1')">Kid-1</button>
+    <button id="tab2" onclick="switchTab('Kid2')">Kid-2</button>
+  </div>
+  <div id="Kid1" class="tab-content">
+    <h2>Kid-1's Chores</h2>
+    <div id="kid1-points">Points: 0</div>
+    <form id="kid1-form">
+      <input type="text" id="kid1-input" placeholder="Add a task" required>
+      <input type="number" id="kid1-task-points" placeholder="Points" required>
+      <button type="submit">Add Task</button>
+    </form>
+    <ul id="kid1-list"></ul>
+  </div>
+  <div id="Kid2" class="tab-content" style="display: none;">
+    <h2>Kid-2's Chores</h2>
+    <div id="kid2-points">Points: 0</div>
+    <form id="kid2-form">
+      <input type="text" id="kid2-input" placeholder="Add a task" required>
+      <input type="number" id="kid2-task-points" placeholder="Points" required>
+      <button type="submit">Add Task</button>
+    </form>
+    <ul id="kid2-list"></ul>
+  </div>
+  <div id="leaderboard">
+    <h2>Leaderboard</h2>
+    <div id="ranking"></div>
   </div>
   <script src="app.js"></script>
 </body>
