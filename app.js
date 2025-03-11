@@ -1,143 +1,60 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Global variables and DOM references
-    let tasks = [];
-    const taskList = document.getElementById('taskList');
-    const addTaskBtn = document.getElementById('addTaskBtn');
-    const taskNameInput = document.getElementById('taskName');
-    const taskPointsInput = document.getElementById('taskPoints');
-    const totalPointsSpan = document.getElementById('totalPoints');
-    const resetDayBtn = document.getElementById('resetDayBtn');
-  
-    // LocalStorage keys
-    const TASKS_KEY = 'chores_tasks';
-    const LAST_RESET_KEY = 'chores_lastReset';
-  
-    // Helper: Get today’s date in YYYY-MM-DD format
-    function getTodayDate() {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd}`;
-    }
-  
-    // Load tasks from localStorage
-    function loadTasks() {
-      const storedTasks = localStorage.getItem(TASKS_KEY);
-      tasks = storedTasks ? JSON.parse(storedTasks) : [];
-    }
-  
-    // Save tasks to localStorage
-    function saveTasks() {
-      localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
-    }
-  
-    // Reset tasks' completion if a new day has begun
-    function checkDayReset() {
-      const lastReset = localStorage.getItem(LAST_RESET_KEY);
-      const today = getTodayDate();
-      if (lastReset !== today) {
-        // Reset completion status of all tasks for the new day
-        tasks.forEach(task => task.completed = false);
-        localStorage.setItem(LAST_RESET_KEY, today);
-        saveTasks();
-      }
-    }
-    
-    // Calculate total points of completed chores
-    function calculateTotalPoints() {
-      return tasks.reduce((total, task) => task.completed ? total + Number(task.points) : total, 0);
-    }
-  
-    // Update total points display
-    function updateTotalPoints() {
-      totalPointsSpan.textContent = calculateTotalPoints();
-    }
-  
-    // Render tasks to the UI
-    function renderTasks() {
-      taskList.innerHTML = '';
-      tasks.forEach(task => {
-        const li = document.createElement('li');
-        
-        // Create div for task info
-        const taskInfo = document.createElement('div');
-        taskInfo.className = 'task-info';
-  
-        // Checkbox for completion
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = task.completed;
-        checkbox.addEventListener('change', () => {
-          task.completed = checkbox.checked;
-          saveTasks();
-          updateTotalPoints();
-        });
-  
-        // Task name and assigned points
-        const spanName = document.createElement('span');
-        spanName.className = 'task-name';
-        spanName.textContent = task.name;
-  
-        const spanPoints = document.createElement('span');
-        spanPoints.className = 'task-points';
-        spanPoints.textContent = `(${task.points} pts)`;
-  
-        taskInfo.appendChild(checkbox);
-        taskInfo.appendChild(spanName);
-        taskInfo.appendChild(spanPoints);
-        li.appendChild(taskInfo);
-  
-        // Delete button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = '✕';
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.addEventListener('click', () => {
-          tasks = tasks.filter(t => t.id !== task.id);
-          saveTasks();
-          renderTasks();
-          updateTotalPoints();
-        });
-        li.appendChild(deleteBtn);
-  
-        taskList.appendChild(li);
-      });
-    }
-  
-    // Event handler for adding a new task
-    addTaskBtn.addEventListener('click', () => {
-      const name = taskNameInput.value.trim();
-      const points = taskPointsInput.value.trim();
-      if (!name || !points) {
-        alert('Please enter both chore name and points.');
-        return;
-      }
-      const task = {
-        id: Date.now(),
-        name,
-        points,
-        completed: false
-      };
-      tasks.push(task);
-      saveTasks();
-      renderTasks();
-      taskNameInput.value = '';
-      taskPointsInput.value = '';
-    });
-  
-    // Reset Day button: manually resets the completed status of all tasks
-    resetDayBtn.addEventListener('click', () => {
-      tasks.forEach(task => task.completed = false);
-      localStorage.setItem(LAST_RESET_KEY, getTodayDate());
-      saveTasks();
-      renderTasks();
-      updateTotalPoints();
-    });
-  
-    // Initial load and setup
-    loadTasks();
-    checkDayReset();
-    renderTasks();
-    updateTotalPoints();
-  });
-  
+let kid1Points = 0;
+let kid2Points = 0;
+
+document.getElementById("kid1-form").addEventListener("submit", (e) => addTask(e, "kid1"));
+document.getElementById("kid2-form").addEventListener("submit", (e) => addTask(e, "kid2"));
+
+function switchTab(tabName) {
+  document.querySelectorAll(".tab-content").forEach((tab) => (tab.style.display = "none"));
+  document.getElementById(tabName).style.display = "block";
+  document.querySelectorAll(".tabs button").forEach((btn) => btn.classList.remove("active"));
+  document.getElementById(tabName === "Kid1" ? "tab1" : "tab2").classList.add("active");
+}
+
+function addTask(e, kid) {
+  e.preventDefault();
+  const input = document.getElementById(`${kid}-input`);
+  const taskPoints = document.getElementById(`${kid}-task-points`);
+  const list = document.getElementById(`${kid}-list`);
+  const pointsDiv = document.getElementById(`${kid}-points`);
+  const task = input.value.trim();
+  const points = parseInt(taskPoints.value);
+
+  if (!task || points <= 0) return;
+
+  const item = document.createElement("li");
+  item.innerHTML = `${task} - ${points} Points <button onclick="markTaskDone(this, '${kid}', ${points})">✔</button>`;
+  list.appendChild(item);
+
+  input.value = "";
+  taskPoints.value = "";
+  updatePoints(kid, points);
+}
+
+function markTaskDone(button, kid, points) {
+  button.parentElement.remove();
+  updatePoints(kid, -points);
+}
+
+function updatePoints(kid, points) {
+  if (kid === "kid1") {
+    kid1Points += points;
+    document.getElementById("kid1-points").textContent = `Points: ${kid1Points}`;
+  } else {
+    kid2Points += points;
+    document.getElementById("kid2-points").textContent = `Points: ${kid2Points}`;
+  }
+  updateLeaderboard();
+}
+
+function updateLeaderboard() {
+  const leaderboard = document.getElementById("ranking");
+  leaderboard.innerHTML = `
+    <p>${kid1Points >= kid2Points ? "Kid-1" : "Kid-2"} is in the lead!</p>
+    <p>Kid-1: ${kid1Points} points</p>
+    <p>Kid-2: ${kid2Points} points</p>
+  `;
+}
+
+// Initialize Leaderboard
+updateLeaderboard();
